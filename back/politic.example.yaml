@@ -1,0 +1,16 @@
+- stepName: backlog
+  fields: 
+    - name
+- stepName: todo
+  fields:
+   - description
+   - points
+- stepName: doing
+  fields:
+   - branch
+- stepName: review
+  fields:
+   - pr   
+- stepName: done
+  fields:
+   - merged
