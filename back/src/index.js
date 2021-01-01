@@ -6,6 +6,9 @@ import cookieParser from 'cookie-parser';
 import asyncify from 'express-asyncify'
 import mongoose from 'mongoose';
 import { createTask, updateTask, deleteTask, listTasks, getTask } from './middleWares/tasks'
+import { getPolitic } from './middleWares/projects'
+
+
 const app = asyncify(express());
 
 app.use(cors());
@@ -81,6 +84,20 @@ app.get('/task/:id', async (req, res) => {
   }
 });
 
+
+
+app.get('/project/politic/:projectId', async (req, res) => {
+  const {projectId} = req.params;
+  try {
+    const politic = await getPolitic(projectId); 
+    res.send({politic})
+  } catch (e){
+    console.log(e)
+	  res.status(400).send({
+      message: 'Could not get politic'
+   });
+  }
+});
 
 
 app.listen(process.env.PORT, () =>

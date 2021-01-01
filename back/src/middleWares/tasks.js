@@ -4,7 +4,9 @@ import { safeLoad } from 'js-yaml';
 
 export async function createTask(projectId, task) {
   if (!task.name) throw new Error();
-  return tasks.create({ projectId, ...task });
+  const { politic } = await projects.findOne({ _id: projectId });
+  const newStatus = statusCompute(politic, task);
+  return tasks.create({ projectId, ...task, status: newStatus });
 }
 
 export async function updateTask(projectId, id, taskUpdate) {
