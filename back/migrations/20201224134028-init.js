@@ -8,19 +8,29 @@ module.exports = {
   fields: 
     - name
 - stepName: todo
-  fields:
-    - description
+  order: 
+    - priority
+  display:  
     - points
+    - priority
+  fields:
+    - name: descripion
+      type: Text
+    - name: points
+      type: Number
+      values: [1,2,3,5,8,13,21]
+      #no type assume that it's a string
+    - name: priority
+      values: [P1, P2, P3]
 - stepName: doing
   fields:
     - branch
 - stepName: review
   fields:
-    - pr   
+    - pr
 - stepName: done
   fields:
-    - merged
-`
+    - merged`
       })
         });
     } finally {

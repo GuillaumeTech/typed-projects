@@ -5,7 +5,7 @@ import './App.css';
 import {Project} from './compoments/Project'
 
 function App() {
-  return <Project projectId='test'/>
+  return <div className="app"> <Project projectId='test'/></div>
 }
 
 export default App;

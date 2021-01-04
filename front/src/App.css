@@ -43,5 +43,10 @@
 
 .column {
   flex-flow: column wrap; 
+  min-width: 22rem;
+  padding: 1rem
 }
 
+.app{
+  padding : 1rem
+}
