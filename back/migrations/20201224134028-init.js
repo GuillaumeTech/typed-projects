@@ -14,7 +14,7 @@ module.exports = {
     - points
     - priority
   fields:
-    - name: descripion
+    - name: description
       type: Text
     - name: points
       type: Number
