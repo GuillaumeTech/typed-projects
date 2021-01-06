@@ -10,13 +10,18 @@ export async function createTask(projectId, task) {
 }
 
 export async function updateTask(projectId, id, taskUpdate) {
-  const newTask = await tasks.findOneAndUpdate({_id:id}, taskUpdate, {new: true}).lean();
+  const newTask = await tasks
+    .findOneAndUpdate({ _id: id }, taskUpdate, { new: true })
+    .lean();
   const { politic } = await projects.findOne({ _id: projectId });
   const newStatus = statusCompute(politic, newTask);
-  return tasks.updateOne(
-    { _id: id },
-    { ...taskUpdate, projectId, status: newStatus },
-  );
+  return await tasks
+    .findOneAndUpdate(
+      { _id: id },
+      { ...taskUpdate, projectId, status: newStatus },
+      { new: true },
+    )
+    .lean();
 }
 
 export async function deleteTask(_id) {
@@ -33,11 +38,19 @@ export async function getTask(_id) {
 
 function statusCompute(politic, taskUpdate) {
   const parsedPolitic = safeLoad(politic);
-  console.log(parsedPolitic)
+  console.log(parsedPolitic);
   let status = '';
   for (let step of parsedPolitic) {
     const { stepName, fields } = step;
-    if (fields.every((field) => taskUpdate[field])) {
+    if (
+      fields.every((field) => {
+        if (typeof field === 'string') {
+          return taskUpdate[field];
+        } else {
+          return taskUpdate[field.name];
+        }
+      })
+    ) {
       status = stepName;
     } else {
       break;

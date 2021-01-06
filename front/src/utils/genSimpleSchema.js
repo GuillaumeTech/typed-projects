@@ -1,7 +1,6 @@
 import SimpleSchema from 'simpl-schema';
 
 export function generateSimpleSchema(parsedPolitic) {
-    console.log(parsedPolitic)
   const schema = parsedPolitic.reduce((all, { fields }) => {
     const newSchemaPart =  fields.reduce((stepFields, field) => {
       if (typeof field === "string") return { ...stepFields, [field]:{type: String, optional: true }};
@@ -16,6 +15,5 @@ export function generateSimpleSchema(parsedPolitic) {
     }, {});
     return {...all, ...newSchemaPart}
   }, {});
-  console.log(new SimpleSchema(schema, {optional: true}))
   return new SimpleSchema(schema)
 }

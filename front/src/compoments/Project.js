@@ -21,7 +21,6 @@ export const Project = ({ projectId }) => {
       const parsedPolitic = safeLoad(politic);
       setTasks(tasks);
       setPolitic(parsedPolitic);
-      console.log(new SimpleSchema2Bridge())
       setSchemaBridge(
         new SimpleSchema2Bridge(generateSimpleSchema(parsedPolitic))
       );
@@ -51,8 +50,13 @@ export const Project = ({ projectId }) => {
     console.log("del");
   }
 
-  function updateTask(id, task) {
-    console.log("up");
+  async function updateTask(projectId, id, task) {
+    const data = await fetchBackend(`/task/update/${projectId}/${id}`, {
+      body: task,
+    });
+    console.log(data)
+   const updatedIndex = tasks.findIndex(task => task._id === data._id)
+   setTasks([...tasks.slice(0, updatedIndex), data,...tasks.slice( updatedIndex+1) ])
   }
 
   function listColumns(parsedPolitic) {
@@ -68,6 +72,7 @@ export const Project = ({ projectId }) => {
         addTask,
         deleteTask,
         updateTask,
+        projectId,
       }}
     >
       <Menu secondary>

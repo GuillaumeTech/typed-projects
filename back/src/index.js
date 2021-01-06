@@ -34,7 +34,6 @@ app.post('/task/create/:projectId', async (req, res) => {
 
 app.post('/task/update/:projectId/:id', async (req, res) => {
   const { body: taskUpdate } = req
-  console.log(taskUpdate)
 	const {id, projectId} = req.params;
   try {
     const updatedTask = await updateTask(projectId, id, taskUpdate); 
