@@ -46,21 +46,23 @@ export const Project = ({ projectId }) => {
     setTasks([...tasks, data]);
   }
 
-  function deleteTask(id) {
-    console.log("del");
+  async function deleteTask(id) {
+    const toBeDeletedIndex = tasks.findIndex(task => task._id === id)
+    const data = await fetchBackend(`/task/delete/${id}` ,{method: 'DELETE'});
+    if(data.deletedCount === 1) setTasks([...tasks.slice(0, toBeDeletedIndex),...tasks.slice( toBeDeletedIndex+1) ])
   }
 
   async function updateTask(projectId, id, task) {
     const data = await fetchBackend(`/task/update/${projectId}/${id}`, {
       body: task,
     });
-    console.log(data)
+   
    const updatedIndex = tasks.findIndex(task => task._id === data._id)
    setTasks([...tasks.slice(0, updatedIndex), data,...tasks.slice( updatedIndex+1) ])
   }
 
   function listColumns(parsedPolitic) {
-    return parsedPolitic.map(({ stepName }) => stepName);
+    return
   }
 
   return (
@@ -103,8 +105,8 @@ export const Project = ({ projectId }) => {
         </Menu.Menu>
       </Menu>
       <div className="columns-container">
-        {listColumns(politic).map((name) => (
-          <Column key={name} name={name} />
+        { politic.map(({ stepName, display }) =>  (
+          <Column key={stepName} name={stepName} display={display} />
         ))}
       </div>
     </ProjectContext.Provider>

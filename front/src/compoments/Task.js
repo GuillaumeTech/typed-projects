@@ -12,9 +12,11 @@ import {
 import { ProjectContext } from "../contexts/ProjectContext";
 
 export function Task(props) {
-  const { name, status, points, priority,description, _id } = props;
+  const { display, task, nextColumnRequirements } = props;
+  const { name, _id } = task;
+
   const [modalOpen, setModalOpen] = useState(false);
-  const { schemaBridge, politic, updateTask, projectId } = useContext(
+  const { schemaBridge, politic, updateTask, deleteTask, projectId } = useContext(
     ProjectContext
   );
 
@@ -30,6 +32,26 @@ export function Task(props) {
     }
   }
 
+  function computeRequiredForNext(task, required) {
+    const missing = [];
+    required.forEach((key) => {
+      if (task[key]) return;
+      missing.push(key);
+    });
+    if (missing.length > 0) return "next: " + missing.join(", ");
+    return "";
+  }
+
+  function renderRequiredForNext() {
+    const missingFields = computeRequiredForNext(
+      task,
+      nextColumnRequirements
+    );
+    if (missingFields)
+      return <Modal.Actions>{missingFields}</Modal.Actions>;
+    return 
+  }
+
   function renderEdit() {
     return (
       <Modal
@@ -37,13 +59,17 @@ export function Task(props) {
         closeIcon
         onClose={() => setModalOpen(false)}
         onOpen={() => setModalOpen(true)}
-        trigger={<Button floated='right' size="tiny">Edit</Button>}
+        trigger={
+          <Button floated="right" size="tiny">
+            Edit
+          </Button>
+        }
       >
         <Modal.Header>{name}</Modal.Header>
         <Modal.Content>
           <AutoForm
             schema={schemaBridge}
-            model={props}
+            model={task}
             onSubmit={(newTask) => {
               updateTask(projectId, _id, newTask);
               setModalOpen(false);
@@ -68,29 +94,37 @@ export function Task(props) {
             <SubmitField />
           </AutoForm>
         </Modal.Content>
+        {renderRequiredForNext()}
       </Modal>
     );
   }
 
-  function displayText(desc = ''){
-    if( desc.length > 100) return description.slice(0,100) + '...';
-    return description
+  function displayText(desc = "") {
+    if (desc.length > 100) return desc.slice(0, 100) + "...";
+    return desc;
   }
   return (
     <>
       <Card>
         <Card.Content>
-        <Button floated="right" icon="trash" basic size='tiny'/>
-        {renderEdit()}
+          <Button floated="right" icon="trash" basic size="tiny" onClick={()=>deleteTask(_id)} />
+          {renderEdit()}
           <Card.Header>{name}</Card.Header>
-          <Card.Meta>{status}</Card.Meta>
-        {/* make it so description is gen */}
-{/* info/display here ? */}
-          <Card.Description>{displayText(description)}</Card.Description>
+          <Card.Meta></Card.Meta>
+          {/* make it so description is gen */}
+          {/* info/display here ? */}
+          <Card.Description>user machin</Card.Description>
         </Card.Content>
-        {/* make it so extra is gen from display property */}
-        {/* users here ? */}
-        <Card.Content extra>{priority}</Card.Content> 
+        {display && (
+          <Card.Content extra>
+            {display
+              .map((field) => {
+                if (task[field]) return `${field}: ${task[field]}`;
+                return "";
+              })
+              .join(", ")}
+          </Card.Content>
+        )}
       </Card>
     </>
   );

@@ -23,9 +23,14 @@ module.exports = {
     - name: priority
       values: [P1, P2, P3]
 - stepName: doing
+  display:  
+    - points
+    - priority
   fields:
     - branch
 - stepName: review
+  display:  
+    - pr
   fields:
     - pr
 - stepName: done
