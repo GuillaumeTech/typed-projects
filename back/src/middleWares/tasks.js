@@ -36,9 +36,31 @@ export async function getTask(_id) {
   return tasks.findOne({ _id }).lean();
 }
 
+
+function containAField(step, fieldname) {
+  const listOfFieldsnames = step.fields.forEach(field => {
+    if (typeof field === 'string') return field
+    return field.name
+  })
+  return listOfFieldsnames.includes(fieldname)
+}
+
+
+
+export async function listTasksToWatch() {
+  const { politic } = await projects.findOne({ _id: projectId });
+  const parsedPolitic = safeLoad(politic);
+  const prStatusIndex = parsedPolitic.findIndex(step => containAField(step, 'pr'))
+  const mergedStatusIndex = politic.findIndex(step => containAField(step, 'merge'))
+  const awaitingPrStatus = politic[prStatusIndex-1].stepName
+  const awaitingMergeStatus = politic[mergedStatusIndex-1].stepName
+  const taskToWatchForPr = tasks.find({status: awaitingPrStatus})
+  const taskToWatchForMerge =  tasks.find({status: awaitingMergeStatus})
+  return {pr:taskToWatchForPr, merge: taskToWatchForMerge};
+}
+
 function statusCompute(politic, taskUpdate) {
   const parsedPolitic = safeLoad(politic);
-  console.log(parsedPolitic);
   let status = '';
   for (let step of parsedPolitic) {
     const { stepName, fields } = step;

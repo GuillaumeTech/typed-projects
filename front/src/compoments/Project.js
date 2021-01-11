@@ -2,17 +2,21 @@ import React, { useState, useEffect } from "react";
 import { fetchBackend } from "../utils/fetchWrapper";
 import "semantic-ui-css/semantic.min.css";
 import { ProjectContext } from "../contexts/ProjectContext";
-import { generateSimpleSchema } from "../utils/genSimpleSchema";
+import { generateSimpleSchema, projectSchema } from "../utils/simpleSchema";
 import { safeLoad } from "js-yaml";
 import { Column } from "./Column";
-import { Menu, Input, Button, Form } from "semantic-ui-react";
+import { Menu, Input, Button, Form, Modal } from "semantic-ui-react";
 import SimpleSchema2Bridge from "uniforms-bridge-simple-schema-2";
+
+
+
 export const Project = ({ projectId }) => {
   const [tasks, setTasks] = useState({});
   const [schemaBridge, setSchemaBridge] = useState({});
-
   const [politic, setPolitic] = useState([]);
   const [newTaskName, setNewTaskName] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
 
   useEffect(() => {
     const getData = async () => {
@@ -34,10 +38,20 @@ export const Project = ({ projectId }) => {
     return data;
   }
 
-  async function fetchPolitic(projectId) {
-    const data = await fetchBackend(`/project/politic/${projectId}`);
+  async function fetchProject(projectId) {
+    const data = await fetchBackend(`/project/${projectId}`);
     return data;
   }
+
+  async function updateProjectSetings(projectId, project) {
+    const data = await fetchBackend(`/project/update/${projectId}`, {
+      body: project,
+    });
+   
+   const updatedIndex = tasks.findIndex(task => task._id === data._id)
+   setTasks([...tasks.slice(0, updatedIndex), data,...tasks.slice( updatedIndex+1) ])
+  }
+
 
   async function addTask(task) {
     const data = await fetchBackend(`/task/create/${projectId}`, {
@@ -61,6 +75,43 @@ export const Project = ({ projectId }) => {
    setTasks([...tasks.slice(0, updatedIndex), data,...tasks.slice( updatedIndex+1) ])
   }
 
+
+  function renderSettings() {
+    return (
+      <Modal
+        open={settingsOpen}
+        closeIcon
+        onClose={() => setSettingsOpen(false)}
+        onOpen={() => setSettingsOpen(true)}
+        trigger={
+          <Button floated="right" size="tiny">
+            Settings
+          </Button>
+        }
+      >
+        <Modal.Header>Settings</Modal.Header>
+        <Modal.Content>
+          <AutoForm
+            schema={projectSchema}
+            model={projectSchema}
+            onSubmit={(newSettings) => {
+              updateProjectSetings(projectId, newSettings);
+              setSettingsOpen(false);
+            }}
+          >
+           
+          </AutoForm>
+        </Modal.Content>
+        
+      </Modal>
+    );
+  }
+
+
+  // name: String,
+  // politic: String,
+  // authToken: String,
+  // repo: String,
   function listColumns(parsedPolitic) {
     return
   }
@@ -101,6 +152,7 @@ export const Project = ({ projectId }) => {
           </Form>
         </Menu.Item>
         <Menu.Menu position="right">
+          
           <Menu.Item name="Project name" />
         </Menu.Menu>
       </Menu>

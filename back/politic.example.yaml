@@ -1,3 +1,7 @@
+# notes validation
+# order of branch, pr, merge need enforce and unique
+
+
 - stepName: backlog
   fields: 
     - name

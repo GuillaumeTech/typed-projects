@@ -7,6 +7,8 @@ import asyncify from 'express-asyncify'
 import mongoose from 'mongoose';
 import { createTask, updateTask, deleteTask, listTasks, getTask } from './middleWares/tasks'
 import { getPolitic } from './middleWares/projects'
+import { startGitWatch } from './middleWares/gitWatch'
+
 
 
 const app = asyncify(express());
@@ -16,7 +18,7 @@ app.use(express.json());
 app.use(logger('dev') );
 app.use(cookieParser())
 mongoose.connect('mongodb://root:tNomeeroZLbx@localhost:27017/typed?authSource=admin', {useNewUrlParser: true});
-
+const watcherId = startGitWatch()
 
 app.post('/task/create/:projectId', async (req, res) => {
   const { body: task } = req

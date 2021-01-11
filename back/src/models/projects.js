@@ -10,6 +10,8 @@ const projects = new Schema(
     },
     name: String,
     politic: String,
+    authToken: String,
+    repo: String,
   },
   { versionKey: false },
 );

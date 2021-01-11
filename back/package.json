@@ -17,6 +17,7 @@
     "nodemon": "^1.18.9"
   },
   "dependencies": {
+    "@octokit/core": "^3.2.4",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",

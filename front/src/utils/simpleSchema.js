@@ -17,3 +17,11 @@ export function generateSimpleSchema(parsedPolitic) {
   }, {});
   return new SimpleSchema(schema)
 }
+
+
+export const projectSchema = new SimpleSchema({
+  name: String,
+  politic: String,
+  authToken: String,
+  repo: String
+})
