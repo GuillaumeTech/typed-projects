@@ -7,13 +7,16 @@ import { safeLoad } from "js-yaml";
 import { Column } from "./Column";
 import { Menu, Input, Button, Form, Modal } from "semantic-ui-react";
 import SimpleSchema2Bridge from "uniforms-bridge-simple-schema-2";
-
+import { AutoForm, AutoField, LongTextField, ErrorsField, SubmitField, NumField} from  "uniforms-semantic";
 
 
 export const Project = ({ projectId }) => {
   const [tasks, setTasks] = useState({});
   const [schemaBridge, setSchemaBridge] = useState({});
-  const [politic, setPolitic] = useState([]);
+  const [taskForm, setTaskForm] = useState([]);
+
+
+  const [project, setProject] = useState({});
   const [newTaskName, setNewTaskName] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -21,10 +24,11 @@ export const Project = ({ projectId }) => {
   useEffect(() => {
     const getData = async () => {
       const tasks = await fetchTasks(projectId);
-      const { politic } = await fetchPolitic(projectId);
+      const { politic, ...rest } = await fetchProject(projectId);
       const parsedPolitic = safeLoad(politic);
       setTasks(tasks);
-      setPolitic(parsedPolitic);
+      setProject({ parsedPolitic, politic,  ...rest });
+      setTaskForm(generateTaskForm(parsedPolitic))
       setSchemaBridge(
         new SimpleSchema2Bridge(generateSimpleSchema(parsedPolitic))
       );
@@ -33,23 +37,58 @@ export const Project = ({ projectId }) => {
     getData();
   }, []);
 
+
+
+
+  function generateTaskForm(aPolitic) {
+    return aPolitic.reduce((all, step) => {
+      const newCompoments = step.fields.map((field) => {
+        let fieldObj = { type: "String" };
+        if (typeof field === "string") {
+          fieldObj.name = field;
+        } else {
+          fieldObj.name = field.name;
+          // deafult to String
+          fieldObj.type = field.type || fieldObj.type;
+        }
+        return pickFieldCompoment(fieldObj);
+      });
+      return [...all, ...newCompoments];
+    }, [])
+  }
+
+  function pickFieldCompoment(field) {
+    switch (field.type) {
+      case "Text":
+        return <LongTextField name={field.name} key={field.name} />;
+      case "Number":
+        return <NumField name={field.name} key={field.name} />;
+      default:
+        return <AutoField name={field.name} key={field.name} />;
+    }
+  }
+
   async function fetchTasks(projectId) {
     const data = await fetchBackend(`/tasks/list/${projectId}`);
     return data;
   }
 
   async function fetchProject(projectId) {
-    const data = await fetchBackend(`/project/${projectId}`);
-    return data;
+    const {project} = await fetchBackend(`/project/${projectId}`);
+    return project;
   }
 
   async function updateProjectSetings(projectId, project) {
     const data = await fetchBackend(`/project/update/${projectId}`, {
       body: project,
     });
-   
-   const updatedIndex = tasks.findIndex(task => task._id === data._id)
-   setTasks([...tasks.slice(0, updatedIndex), data,...tasks.slice( updatedIndex+1) ])
+    const { politic, ...rest } = data
+    const parsedPolitic = safeLoad(politic);
+    setSchemaBridge(
+      new SimpleSchema2Bridge(generateSimpleSchema(parsedPolitic))
+    );
+    setTaskForm(generateTaskForm(parsedPolitic))
+    setProject({ parsedPolitic, politic,  ...rest });
   }
 
 
@@ -92,14 +131,27 @@ export const Project = ({ projectId }) => {
         <Modal.Header>Settings</Modal.Header>
         <Modal.Content>
           <AutoForm
-            schema={projectSchema}
-            model={projectSchema}
+            schema={ new SimpleSchema2Bridge(projectSchema)}
+            model={project}
             onSubmit={(newSettings) => {
               updateProjectSetings(projectId, newSettings);
               setSettingsOpen(false);
             }}
           >
+
+        <AutoField name='name' key='name' />
+
+        <LongTextField name='politic' key='politic' />
+   
+        <AutoField name='authToken' key='authToken' />
+
+
+     
+        <AutoField name='repo' key='repo' />
            
+        <ErrorsField />
+
+<SubmitField />
           </AutoForm>
         </Modal.Content>
         
@@ -107,11 +159,6 @@ export const Project = ({ projectId }) => {
     );
   }
 
-
-  // name: String,
-  // politic: String,
-  // authToken: String,
-  // repo: String,
   function listColumns(parsedPolitic) {
     return
   }
@@ -120,8 +167,9 @@ export const Project = ({ projectId }) => {
     <ProjectContext.Provider
       value={{
         tasks,
-        politic,
+        politic: project.parsedPolitic,
         schemaBridge,
+        taskForm,
         addTask,
         deleteTask,
         updateTask,
@@ -152,12 +200,14 @@ export const Project = ({ projectId }) => {
           </Form>
         </Menu.Item>
         <Menu.Menu position="right">
-          
-          <Menu.Item name="Project name" />
+        <Menu.Item >
+        {renderSettings()}
+        </Menu.Item  >
+          <Menu.Item name={project.name} />
         </Menu.Menu>
       </Menu>
       <div className="columns-container">
-        { politic.map(({ stepName, display }) =>  (
+        { project.parsedPolitic && project.parsedPolitic.map(({ stepName, display }) =>  (
           <Column key={stepName} name={stepName} display={display} />
         ))}
       </div>

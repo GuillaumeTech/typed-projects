@@ -1,12 +1,12 @@
 import {listTasksToWatch} from './tasks'
- 
+import {Octokit} from '@octokit/core'
 
 const octokit = new Octokit({ auth: `personal-access-token123` });
 
-await octokit.request('GET /repos/{owner}/{repo}/pulls', {
-    owner: 'octocat',
-    repo: 'hello-world'
-  })
+// await octokit.request('GET /repos/{owner}/{repo}/pulls', {
+//     owner: 'octocat',
+//     repo: 'hello-world'
+//   })
 function updateIfneeded(task, listOpenPR, listRecentlyClosedPR){
 
 }

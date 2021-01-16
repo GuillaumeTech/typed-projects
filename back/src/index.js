@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import asyncify from 'express-asyncify'
 import mongoose from 'mongoose';
 import { createTask, updateTask, deleteTask, listTasks, getTask } from './middleWares/tasks'
-import { getPolitic } from './middleWares/projects'
+import { getProject, updateProject } from './middleWares/projects'
 import { startGitWatch } from './middleWares/gitWatch'
 
 
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(logger('dev') );
 app.use(cookieParser())
 mongoose.connect('mongodb://root:tNomeeroZLbx@localhost:27017/typed?authSource=admin', {useNewUrlParser: true});
-const watcherId = startGitWatch()
+// const watcherId = startGitWatch()
 
 app.post('/task/create/:projectId', async (req, res) => {
   const { body: task } = req
@@ -87,18 +87,35 @@ app.get('/task/:id', async (req, res) => {
 
 
 
-app.get('/project/politic/:projectId', async (req, res) => {
+app.get('/project/:projectId', async (req, res) => {
   const {projectId} = req.params;
   try {
-    const politic = await getPolitic(projectId); 
-    res.send({politic})
+    const project = await getProject(projectId); 
+    res.send({project})
   } catch (e){
     console.log(e)
 	  res.status(400).send({
-      message: 'Could not get politic'
+      message: 'Could not get project'
    });
   }
 });
+
+
+
+app.post('/project/update/:projectId', async (req, res) => {
+  const { body: project } = req
+	const {projectId} = req.params;
+  try {
+    const updatedProject = await updateProject(projectId, project); 
+    res.send(updatedProject)
+  } catch (e){
+    console.log(e)
+	  res.status(400).send({
+      message: 'Could not update project'
+   });
+  }
+});
+
 
 
 app.listen(process.env.PORT, () =>

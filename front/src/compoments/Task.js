@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "semantic-ui-css/semantic.min.css";
 import { Card, Button, Modal, Icon } from "semantic-ui-react";
 import {
@@ -16,13 +16,34 @@ export function Task(props) {
   const { name, _id } = task;
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [taskForm, setTaskForm] = useState([]);
+
   const { schemaBridge, politic, updateTask, deleteTask, projectId } = useContext(
     ProjectContext
   );
+  useEffect(() => {
+    console.log('hey')
+    setTaskForm(generateTaskForm(politic))}, [politic])
+
+  function generateTaskForm(aPolitic) {
+    return aPolitic.reduce((all, step) => {
+      const newCompoments = step.fields.map((field) => {
+        let fieldObj = { type: "String" };
+        if (typeof field === "string") {
+          fieldObj.name = field;
+        } else {
+          fieldObj.name = field.name;
+          // deafult to String
+          fieldObj.type = field.type || fieldObj.type;
+        }
+        return pickFieldCompoment(fieldObj);
+      });
+      return [...all, ...newCompoments];
+    }, [])
+  }
 
   function pickFieldCompoment(field) {
     switch (field.type) {
-      // no check on  the string type beacuse it is the deafault one
       case "Text":
         return <LongTextField name={field.name} key={field.name} />;
       case "Number":
@@ -75,20 +96,7 @@ export function Task(props) {
               setModalOpen(false);
             }}
           >
-            {politic.reduce((all, step) => {
-              const newCompoments = step.fields.map((field) => {
-                let fieldObj = { type: "String" };
-                if (typeof field === "string") {
-                  fieldObj.name = field;
-                } else {
-                  fieldObj.name = field.name;
-                  // deafult to String
-                  fieldObj.type = field.type || fieldObj.type;
-                }
-                return pickFieldCompoment(fieldObj);
-              });
-              return [...all, ...newCompoments];
-            }, [])}
+          {taskForm}
             <ErrorsField />
 
             <SubmitField />
