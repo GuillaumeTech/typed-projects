@@ -38,7 +38,7 @@ export async function getTask(_id) {
 
 
 function containAField(step, fieldname) {
-  const listOfFieldsnames = step.fields.forEach(field => {
+  const listOfFieldsnames = step.fields.map(field => {
     if (typeof field === 'string') return field
     return field.name
   })
@@ -47,16 +47,16 @@ function containAField(step, fieldname) {
 
 
 
-export async function listTasksToWatch() {
-  const { politic } = await projects.findOne({ _id: projectId });
+export async function listTasksToWatch(projectId) {
+  const { politic } = await projects.findOne({ _id: projectId }).lean();
   const parsedPolitic = safeLoad(politic);
   const prStatusIndex = parsedPolitic.findIndex(step => containAField(step, 'pr'))
-  const mergedStatusIndex = politic.findIndex(step => containAField(step, 'merge'))
-  const awaitingPrStatus = politic[prStatusIndex-1].stepName
-  const awaitingMergeStatus = politic[mergedStatusIndex-1].stepName
-  const taskToWatchForPr = tasks.find({status: awaitingPrStatus})
-  const taskToWatchForMerge =  tasks.find({status: awaitingMergeStatus})
-  return {pr:taskToWatchForPr, merge: taskToWatchForMerge};
+  const mergedStatusIndex = parsedPolitic.findIndex(step => containAField(step, 'merged'))
+  const awaitingPrStatus = parsedPolitic[prStatusIndex-1].stepName
+  const awaitingMergeStatus = parsedPolitic[mergedStatusIndex-1].stepName
+  const taskToWatchForPr = await tasks.find({status: awaitingPrStatus}).lean()
+  const taskToWatchForMerge =  await tasks.find({status: awaitingMergeStatus}).lean()
+  return {pr:taskToWatchForPr, merged: taskToWatchForMerge};
 }
 
 function statusCompute(politic, taskUpdate) {

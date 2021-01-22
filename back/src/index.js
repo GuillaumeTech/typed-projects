@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(logger('dev') );
 app.use(cookieParser())
 mongoose.connect('mongodb://root:tNomeeroZLbx@localhost:27017/typed?authSource=admin', {useNewUrlParser: true});
-// const watcherId = startGitWatch()
+startGitWatch('test')
 
 app.post('/task/create/:projectId', async (req, res) => {
   const { body: task } = req

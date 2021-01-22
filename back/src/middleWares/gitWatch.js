@@ -1,25 +1,37 @@
 import {listTasksToWatch} from './tasks'
-import {Octokit} from '@octokit/core'
+const { Octokit } = require("@octokit/rest");
+import projects from '../models/projects.js';
 
-const octokit = new Octokit({ auth: `personal-access-token123` });
 
-// await octokit.request('GET /repos/{owner}/{repo}/pulls', {
-//     owner: 'octocat',
-//     repo: 'hello-world'
-//   })
 function updateIfneeded(task, listOpenPR, listRecentlyClosedPR){
 
 }
 
 
-export function startGitWatch(){
-    getGitInfo()
-    setInterval(()=>{
-        const tasks = listTasksToWatch();
-        const listOpenPR = gittruc
-        const listRecentlyClosedPR = gittruc
-        tasks.map((task)=>updateIfneeded(task,listOpenPR, listRecentlyClosedPR))
-    },30000)    
+export async function startGitWatch(projectId){
+    const {authToken, repo} = await projects.findOne({ _id: projectId}).lean()
+    const [owner, reponame] = repo.split('/')
+    const octokit = new Octokit({ auth: authToken });
+  
+    setInterval(async ()=>{
+        const tasks = await listTasksToWatch(projectId);
+        // no need to query github if there is none to watch
+        if (tasks.length === 0) return
+
+        const listOpenPR = await octokit.pulls.list({
+            owner,
+            repo: reponame,
+            state: 'open'
+          });
+        const listRecentlyClosedPR = await octokit.search.code({
+            q: 'type:pr is:merged',
+          });
+        // console.log('open', listOpenPR)
+          
+        console.log('open', listOpenPR.data[0].head.ref)
+        // console.log('closed', listRecentlyClosedPR)
+        // tasks.map((task)=>updateIfneeded(task,listOpenPR, listRecentlyClosedPR))
+    },10000)    
 }
 
 
