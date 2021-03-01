@@ -4,6 +4,15 @@ import projects from '../models/projects.js';
 
 
 function updateIfneeded(task, listOpenPR, listRecentlyClosedPR){
+  const { branch, pr, _prNumber } = task
+  if (!_prNumber){
+    const correspondingPR = listOpenPR.find( pr => pr.branch === branch))
+    if(correspondingPR){
+      return tasks.update( _prNumber)
+    }
+  }
+
+  
 
 }
 
@@ -23,14 +32,13 @@ export async function startGitWatch(projectId){
             repo: reponame,
             state: 'open'
           });
-        const listRecentlyClosedPR = await octokit.search.code({
-            q: 'type:pr is:merged',
+        const listRecentlyClosedPR = await octokit.search.issuesAndPullRequests({
+            q: `type:pr is:merged repo:${repo}`,
           });
-        // console.log('open', listOpenPR)
-          
-        console.log('open', listOpenPR.data[0].head.ref)
-        // console.log('closed', listRecentlyClosedPR)
-        // tasks.map((task)=>updateIfneeded(task,listOpenPR, listRecentlyClosedPR))
+        const openPrBranches = listOpenPR.data.map(pr =>( {branch: pr.head.ref, number: pr.number}))
+console.log(listRecentlyClosedPR.data.items)
+        const closedPR = listRecentlyClosedPR.data.items.map(pr => pr.number)
+        // await Promise.all(tasks.map((task)=>updateIfneeded(task,openPrBranches, closedPR)))
     },10000)    
 }
 
