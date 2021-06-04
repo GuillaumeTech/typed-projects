@@ -6,7 +6,7 @@ import projects from '../models/projects.js';
 function updateIfneeded(task, listOpenPR, listRecentlyClosedPR){
   const { branch, pr, _prNumber } = task
   if (!_prNumber){
-    const correspondingPR = listOpenPR.find( pr => pr.branch === branch))
+    const correspondingPR = listOpenPR.find( pr => pr.branch === branch);
     if(correspondingPR){
       return tasks.update( _prNumber)
     }

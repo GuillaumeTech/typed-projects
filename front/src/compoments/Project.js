@@ -8,7 +8,15 @@ import { Column } from "./Column";
 import { Menu, Input, Button, Form, Modal } from "semantic-ui-react";
 import SimpleSchema2Bridge from "uniforms-bridge-simple-schema-2";
 import { AutoForm, AutoField, LongTextField, ErrorsField, SubmitField, NumField} from  "uniforms-semantic";
+import { Appwrite } from "appwrite";
 
+
+const appwrite = new Appwrite();
+
+appwrite
+    .setEndpoint('http://localhost/v1') // Set only when using self-hosted solution
+    .setProject('60b4040f9445d')
+;
 
 export const Project = ({ projectId }) => {
   const [tasks, setTasks] = useState({});
