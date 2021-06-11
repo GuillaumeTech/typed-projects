@@ -1,4 +1,4 @@
-import {listTasksToWatch} from './tasks'
+imporu {listTasksToWatch} from './tasks'
 const { Octokit } = require("@octokit/rest");
 import projects from '../models/projects.js';
 
@@ -17,7 +17,7 @@ function updateIfneeded(task, listOpenPR, listRecentlyClosedPR){
 }
 
 
-export async function startGitWatch(projectId){
+xport async function startGitWatch(projectId){
     const {authToken, repo} = await projects.findOne({ _id: projectId}).lean()
     const [owner, reponame] = repo.split('/')
     const octokit = new Octokit({ auth: authToken });

@@ -7,7 +7,7 @@ import asyncify from 'express-asyncify'
 import mongoose from 'mongoose';
 import { createTask, updateTask, deleteTask, listTasks, getTask } from './middleWares/tasks'
 import { getProject, updateProject } from './middleWares/projects'
-import { startGitWatch } from './middleWares/gitWatch'
+import { handleGitWebhookData } from './middleWares/githubWebhook'
 
 
 
@@ -19,6 +19,32 @@ app.use(logger('dev') );
 app.use(cookieParser())
 mongoose.connect('mongodb://root:tNomeeroZLbx@localhost:27017/typed?authSource=admin', {useNewUrlParser: true});
 startGitWatch('test')
+
+
+
+
+app.post('/watch/:projectId', async (req, res) => {
+  
+  const { headers, body, method } = req
+  const {projectId} = req.params;
+  
+  // check that the request is an expected one
+  if (method !== 'POST') return 
+  if (!projectId) return 
+  if (!checkRequestSignature(headers['X-Hub-Signature-256'])) return
+  
+	  
+  try {
+    await handleGitWebhookData(body, headers['X-GithHub-Event'], projectId)
+    res.status(201).send()
+  } catch (e){
+    console.log(e)
+    res.status(400).send();
+  }
+});
+
+
+
 
 app.post('/task/create/:projectId', async (req, res) => {
   const { body: task } = req
