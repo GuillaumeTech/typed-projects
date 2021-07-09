@@ -20,29 +20,43 @@ export function handleGitWebhookData(body, type, projectId) {
 }
 
 
-function handlePR(body, projectId){
+function async handlePR(body, projectId){
 	const {action, pull_request} = body
+	const branch = pull_request?.head?.ref	
+	const task = await tasks.find({branch});
 	switch(action){
 		case 'closed':
-		case 'locked':
+			// for good measure we re-update the pr value
+			const newTask = {...task, pr: pull_request.url, merged: pull_request.merged}
+			await updateTask(task.projectId, task._id, newTask)
 			// if + merge next step
 		break;
 		case 'ready_for_review':
 		case 'opened':
-		case  'review_requested': 
-			// if not a draft move to next step
+		case 'review_requested':
+			if(!pull_request.draft){
+				const newTask = {...task, pr: pull_request.url,}
+				await updateTask(task.projectId, task._id, newTask)
+			} 
 		break;
-                case 'closed':
-
+		case: 'converted_to_draft':
+			const newTask = {...task, pr: undefined } 
+			await updateTask(task.projectId, task._id, newTask)
 		break;
 
 	}
 
 }
 
-function handleReview(body, projectId){}
 
-function handlePush(body, projectId){}
+// maybe some fancy stuff to do here
+function handleReview(body, projectId){
+	return undefined
+}
+
+// auto create task is branch does not exist
+function handlePush(body, projectId){
+}
 
 
 
